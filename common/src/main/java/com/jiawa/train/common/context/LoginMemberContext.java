@@ -3,7 +3,9 @@ package com.jiawa.train.common.context;
 import com.jiawa.train.common.resp.MemberLoginResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class LoginMemberContext {
     private static final Logger LOG = LoggerFactory.getLogger(LoginMemberContext.class);
 
