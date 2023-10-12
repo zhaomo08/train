@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import {createRouter, createWebHistory} from 'vue-router'
 import store from "@/store";
 import {notification} from "ant-design-vue";
 
@@ -11,20 +11,24 @@ const routes = [{
     meta: {
       loginRequire: true
     },
-    children: [{
-      path: 'welcome',
-      component: () => import('../views/main/welcome.vue'),
-    }, {
-      path: 'passenger',
-      component: () => import('../views/main/passenger.vue'),
-    }, {
-      path: 'ticket',
-      component: () => import('../views/main/ticket.vue'),
-    }, {
-      path: 'order',
-      component: () => import('../views/main/order.vue'),
-    }]
+  children: [{
+    path: 'welcome',
+    component: () => import('../views/main/welcome.vue'),
   }, {
+    path: 'passenger',
+    component: () => import('../views/main/passenger.vue'),
+  }, {
+    path: 'ticket',
+    component: () => import('../views/main/ticket.vue'),
+  }, {
+    path: 'order',
+    component: () => import('../views/main/order.vue'),
+  },
+    {
+      path: 'my-ticket',
+      component: () => import('../views/main/my-ticket.vue')
+    },]
+}, {
     path: '',
     redirect: '/welcome'
   }];
