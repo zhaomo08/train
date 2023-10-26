@@ -8,6 +8,8 @@ import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,7 +29,6 @@ import com.jiawa.train.common.exception.BusinessExceptionEnum;
 import com.jiawa.train.common.resp.PageResp;
 import com.jiawa.train.common.util.SnowUtil;
 import jakarta.annotation.Resource;
-import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,8 +63,8 @@ public class ConfirmOrderService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private RedissonClient redissonClient;
+//    @Autowired
+//    private RedissonClient redissonClient;
 
     public void save(ConfirmOrderDoReq req) {
         DateTime now = DateTime.now();
@@ -111,6 +112,7 @@ public class ConfirmOrderService {
      * @param req
      */
 
+    @SentinelResource(value = "doConfirm", blockHandler = "doConfirmBlock")
     public void doConfirm(ConfirmOrderDoReq req) {
         // 获取分布式锁
         String lockKey = RedisKeyPreEnum.CONFIRM_ORDER + "-" + DateUtil.formatDate(req.getDate()) + "-" + req.getTrainCode();
@@ -267,11 +269,11 @@ public class ConfirmOrderService {
         }
     }
 
-        // 座位表修改售卖情况sell;
+    // 座位表修改售卖情况sell;
 
-            // 余票详情表修改余票；
-            // 为会员增加购票记录
-            // 更新确认订单为成功
+    // 余票详情表修改余票；
+    // 为会员增加购票记录
+    // 更新确认订单为成功
 
 
     /**
@@ -465,5 +467,16 @@ public class ConfirmOrderService {
                 }
             }
         }
+    }
+
+    /**
+     * 降级方法，需包含限流方法的所有参数和BlockException参数
+     *
+     * @param req
+     * @param e
+     */
+    public void doConfirmBlock(ConfirmOrderDoReq req, BlockException e) {
+        LOG.info("购票请求被限流：{}", req);
+        throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_FLOW_EXCEPTION);
     }
 }
