@@ -1,0 +1,13 @@
+GET http://localhost:8000/business/admin/daily-train-ticket/query-list?page=1&size=5&trainCode=G822&start=深圳北&end=虎门
+Content-Type: application/json
+
+###
+
+GET http://localhost:8000/business/admin/daily-train-ticket/query-list2?page=1&size=5&trainCode=G822&start=深圳北&end=虎门
+Content-Type: application/json
+
+###
+
+GET http://localhost:8000/business/admin/daily-train-ticket/query-list3?page=1&size=5&trainCode=G822&start=深圳北&end=虎门
+Content-Type: application/json
+
