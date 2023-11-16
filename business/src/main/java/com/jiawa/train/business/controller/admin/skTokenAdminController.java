@@ -3,7 +3,7 @@ package com.jiawa.train.business.controller.admin;
 import com.jiawa.train.business.req.skTokenQueryReq;
 import com.jiawa.train.business.req.skTokenSaveReq;
 import com.jiawa.train.business.resp.skTokenQueryResp;
-import com.jiawa.train.business.service.skTokenService;
+import com.jiawa.train.business.service.SkTokenService;
 import com.jiawa.train.common.resp.CommonResp;
 import com.jiawa.train.common.resp.PageResp;
 import jakarta.annotation.Resource;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class skTokenAdminController {
 
     @Resource
-    private skTokenService skTokenService;
+    private SkTokenService skTokenService;
 
     @PostMapping("/save")
     public CommonResp<Object> save(@Valid @RequestBody skTokenSaveReq req) {
