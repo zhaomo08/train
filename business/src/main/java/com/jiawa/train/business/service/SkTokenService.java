@@ -8,6 +8,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.jiawa.train.business.domain.SkToken;
 import com.jiawa.train.business.domain.SkTokenExample;
+import com.jiawa.train.business.enums.RedisKeyPreEnum;
 import com.jiawa.train.business.mapper.SkTokenMapper;
 import com.jiawa.train.business.mapper.cust.SkTokenMapperCust;
 import com.jiawa.train.business.req.skTokenQueryReq;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class SkTokenService {
@@ -124,7 +126,15 @@ public class SkTokenService {
     public boolean validSkToken(Date date, String trainCode, Long memberId) {
         LOG.info("会员【{}】获取日期【{}】车次【{}】的令牌开始", memberId, DateUtil.formatDate(date), trainCode);
 
-
+        // 先获取令牌锁，再校验令牌余量，防止机器人抢票，lockKey就是令牌，用来表示【谁能做什么】的一个凭证
+        String lockKey = RedisKeyPreEnum.SK_TOKEN + "-" + DateUtil.formatDate(date) + "-" + trainCode + "-" + memberId;
+        Boolean setIfAbsent = redisTemplate.opsForValue().setIfAbsent(lockKey, lockKey, 5, TimeUnit.SECONDS);
+        if (Boolean.TRUE.equals(setIfAbsent)) {
+            LOG.info("恭喜，抢到令牌锁了！lockKey：{}", lockKey);
+        } else {
+            LOG.info("很遗憾，没抢到令牌锁！lockKey：{}", lockKey);
+            return false;
+        }
         // 令牌约等于库存，令牌没有了，就不再卖票，不需要再进入购票主流程去判断库存，判断令牌肯定比判断库存效率高
         int updateCount = skTokenMapperCust.decrease(date, trainCode, 1);
         if (updateCount > 0) {
