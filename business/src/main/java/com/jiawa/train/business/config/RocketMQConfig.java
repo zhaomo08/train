@@ -18,7 +18,7 @@ public class RocketMQConfig {
         RocketMQTemplate rocketMQTemplate = new RocketMQTemplate();
         DefaultMQProducer producer = new DefaultMQProducer();
         producer.setProducerGroup("default");
-        producer.setNamesrvAddr("http://192.168.1.7:9876");
+        producer.setNamesrvAddr("http://localhost:10076");
         producer.setSendMsgTimeout(3000);
         rocketMQTemplate.setProducer(producer);
         return rocketMQTemplate;
