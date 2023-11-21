@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from 'vue';
+import {defineComponent, onMounted, ref} from 'vue';
 import {notification} from "ant-design-vue";
 import axios from "axios";
 
@@ -79,30 +79,25 @@ export default defineComponent({
     });
     let loading = ref(false);
     const columns = [
-    {
-      title: '会员id',
-      dataIndex: 'memberId',
-      key: 'memberId',
-    },
-    {
-      title: '姓名',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: '身份证',
-      dataIndex: 'idCard',
-      key: 'idCard',
-    },
-    {
-      title: '旅客类型',
-      dataIndex: 'type',
-      key: 'type',
-    },
-    {
-      title: '操作',
-      dataIndex: 'operation'
-    }
+      {
+        title: '姓名',
+        dataIndex: 'name',
+        key: 'name',
+      },
+      {
+        title: '身份证',
+        dataIndex: 'idCard',
+        key: 'idCard',
+      },
+      {
+        title: '旅客类型',
+        dataIndex: 'type',
+        key: 'type',
+      },
+      {
+        title: '操作',
+        dataIndex: 'operation'
+      }
     ];
 
     const onAdd = () => {
