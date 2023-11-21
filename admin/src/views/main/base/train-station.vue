@@ -33,6 +33,7 @@
       </a-form-item>
       <a-form-item label="站序">
         <a-input v-model:value="trainStation.index" />
+        <span style="color: red">重要：第1站是0，对显示销售图有影响</span>
       </a-form-item>
       <a-form-item label="站名">
         <station-select-view v-model="trainStation.name"></station-select-view>
@@ -57,7 +58,7 @@
 </template>
 
 <script>
-import {defineComponent, ref, onMounted, watch} from 'vue';
+import {defineComponent, onMounted, ref, watch} from 'vue';
 import {notification} from "ant-design-vue";
 import axios from "axios";
 import {pinyin} from "pinyin-pro";

@@ -3,14 +3,14 @@ import store from "@/store";
 import {notification} from "ant-design-vue";
 
 const routes = [{
-    path: '/login',
-    component: () => import('../views/login.vue')
-  }, {
-    path: '/',
-    component: () => import('../views/main.vue'),
-    meta: {
-      loginRequire: true
-    },
+  path: '/login',
+  component: () => import('../views/login.vue')
+}, {
+  path: '/',
+  component: () => import('../views/main.vue'),
+  meta: {
+    loginRequire: true
+  },
   children: [{
     path: 'welcome',
     component: () => import('../views/main/welcome.vue'),
@@ -21,17 +21,22 @@ const routes = [{
     path: 'ticket',
     component: () => import('../views/main/ticket.vue'),
   }, {
+    path: 'my-ticket',
+    component: () => import('../views/main/my-ticket.vue'),
+  }, {
     path: 'order',
     component: () => import('../views/main/order.vue'),
-  },
-    {
-      path: 'my-ticket',
-      component: () => import('../views/main/my-ticket.vue')
-    },]
+  }, {
+    path: 'seat',
+    component: () => import('../views/main/seat.vue')
+  }, {
+    path: 'admin',
+    component: () => import('../views/main/admin.vue')
+  }]
 }, {
-    path: '',
-    redirect: '/welcome'
-  }];
+  path: '',
+  redirect: '/welcome'
+}];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),

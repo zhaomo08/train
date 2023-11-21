@@ -1,7 +1,8 @@
 <template>
   <p>
     <a-space>
-      <a-date-picker v-model:value="params.date" valueFormat="YYYY-MM-DD" placeholder="请选择日期"></a-date-picker>
+      <a-date-picker v-model:value="params.date" valueFormat="YYYY-MM-DD" :disabled-date="disabledDate"
+                     placeholder="请选择日期"></a-date-picker>
       <station-select-view v-model="params.start" width="200px"></station-select-view>
       <station-select-view v-model="params.end" width="200px"></station-select-view>
       <a-button type="primary" @click="handleQuery()">查找</a-button>
@@ -14,7 +15,25 @@
            :loading="loading">
     <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'operation'">
-        <a-button type="primary" @click="toOrder(record)">预订</a-button>
+        <a-space>
+          <a-button type="primary" @click="toOrder(record)" :disabled="isExpire(record)">
+            {{ isExpire(record) ? "过期" : "预订" }}
+          </a-button>
+          <router-link :to="{
+            path: '/seat',
+            query: {
+              date: record.date,
+              trainCode: record.trainCode,
+              start: record.start,
+              startIndex: record.startIndex,
+              end: record.end,
+              endIndex: record.endIndex
+            }
+          }">
+            <a-button type="primary">座位销售图</a-button>
+          </router-link>
+          <a-button type="primary" @click="showStation(record)">途经车站</a-button>
+        </a-space>
       </template>
       <template v-else-if="column.dataIndex === 'station'">
         {{record.start}}<br/>
@@ -71,10 +90,33 @@
       </template>
     </template>
   </a-table>
+
+  <!-- 途经车站 -->
+  <a-modal style="top: 30px" v-model:visible="visible" :title="null" :footer="null" :closable="false">
+    <a-table :data-source="stations" :pagination="false">
+      <a-table-column key="index" title="站序" data-index="index"/>
+      <a-table-column key="name" title="站名" data-index="name"/>
+      <a-table-column key="inTime" title="进站时间" data-index="inTime">
+        <template #default="{ record }">
+          {{ record.index === 0 ? '-' : record.inTime }}
+        </template>
+      </a-table-column>
+      <a-table-column key="outTime" title="出站时间" data-index="outTime">
+        <template #default="{ record }">
+          {{ record.index === (stations.length - 1) ? '-' : record.outTime }}
+        </template>
+      </a-table-column>
+      <a-table-column key="stopTime" title="停站时长" data-index="stopTime">
+        <template #default="{ record }">
+          {{ record.index === 0 || record.index === (stations.length - 1) ? '-' : record.stopTime }}
+        </template>
+      </a-table-column>
+    </a-table>
+  </a-modal>
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from 'vue';
+import {defineComponent, onMounted, ref} from 'vue';
 import {notification} from "ant-design-vue";
 import axios from "axios";
 import StationSelectView from "@/components/station-select";
@@ -119,47 +161,47 @@ export default defineComponent({
     let loading = ref(false);
     const params = ref({});
     const columns = [
-    {
-      title: '车次编号',
-      dataIndex: 'trainCode',
-      key: 'trainCode',
-    },
-    {
-      title: '车站',
-      dataIndex: 'station',
-    },
-    {
-      title: '时间',
-      dataIndex: 'time',
-    },
-    {
-      title: '历时',
-      dataIndex: 'duration',
-    },
-    {
-      title: '一等座',
-      dataIndex: 'ydz',
-      key: 'ydz',
-    },
-    {
-      title: '二等座',
-      dataIndex: 'edz',
-      key: 'edz',
-    },
-    {
-      title: '软卧',
-      dataIndex: 'rw',
-      key: 'rw',
-    },
-    {
-      title: '硬卧',
-      dataIndex: 'yw',
-      key: 'yw',
-    },
-    {
-      title: '操作',
-      dataIndex: 'operation',
-    },
+      {
+        title: '车次编号',
+        dataIndex: 'trainCode',
+        key: 'trainCode',
+      },
+      {
+        title: '车站',
+        dataIndex: 'station',
+      },
+      {
+        title: '时间',
+        dataIndex: 'time',
+      },
+      {
+        title: '历时',
+        dataIndex: 'duration',
+      },
+      {
+        title: '一等座',
+        dataIndex: 'ydz',
+        key: 'ydz',
+      },
+      {
+        title: '二等座',
+        dataIndex: 'edz',
+        key: 'edz',
+      },
+      {
+        title: '软卧',
+        dataIndex: 'rw',
+        key: 'rw',
+      },
+      {
+        title: '硬卧',
+        dataIndex: 'yw',
+        key: 'yw',
+      },
+      {
+        title: '操作',
+        dataIndex: 'operation',
+      },
     ];
 
 
@@ -230,6 +272,43 @@ export default defineComponent({
       router.push("/order")
     };
 
+    // ---------------------- 途经车站 ----------------------
+    const stations = ref([]);
+    const showStation = record => {
+      visible.value = true;
+      axios.get("/business/daily-train-station/query-by-train-code", {
+        params: {
+          date: record.date,
+          trainCode: record.trainCode
+        }
+      }).then((response) => {
+        let data = response.data;
+        if (data.success) {
+          stations.value = data.content;
+        } else {
+          notification.error({description: data.message});
+        }
+      });
+    };
+
+    // 不能选择今天以前及两周以后的日期
+    const disabledDate = current => {
+      return current && (current <= dayjs().add(-1, 'day') || current > dayjs().add(14, 'day'));
+    };
+
+    // 判断是否过期
+    const isExpire = (record) => {
+      // 标准时间：2000/01/01 00:00:00
+      let startDateTimeString = record.date.replace(/-/g, "/") + " " + record.startTime;
+      let startDateTime = new Date(startDateTimeString);
+
+      //当前时间
+      let now = new Date();
+
+      console.log(startDateTime)
+      return now.valueOf() >= startDateTime.valueOf();
+    };
+
     onMounted(() => {
       //  "|| {}"是常用技巧，可以避免空指针异常
       params.value = SessionStorage.get(SESSION_TICKET_PARAMS) || {};
@@ -252,7 +331,11 @@ export default defineComponent({
       loading,
       params,
       calDuration,
-      toOrder
+      toOrder,
+      showStation,
+      stations,
+      disabledDate,
+      isExpire
     };
   },
 });
